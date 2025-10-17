@@ -1,0 +1,57 @@
+// ==UserScript==
+// @name         Wocabee Czech to German with Articles (Hobby & Rezept)
+// @namespace    http://tampermonkey.net/
+// @version      1.5
+// @description  Czech → German překlad s členy jen pro „hobby“ a „recept“.
+// @author       Ty
+// @match        https://*.wocabee.cz/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    // Seznam slovíček – všechna slova, jen „hobby“ a „recept“ s členem
+    const preklady = {
+        "koníček": "das Hobby",
+        "trochu": "ein bisschen",
+        "nejraději": "am liebsten",
+        "recept": "das Rezept",
+        "žít": "leben",
+        "šplhat": "klettern",
+        "lézt": "klettern",
+        "telefonování": "Telefonieren",
+        "s": "mit",
+        "chodit na túry": "wandern gehen"
+    };
+
+    // Simulace lidského psaní
+    async function napisZpozdeno(inputElement, text, delayMin = 200, delayMax = 600) {
+        inputElement.focus();
+        inputElement.value = "";
+        for (let char of text) {
+            inputElement.value += char;
+            const delay = Math.floor(Math.random() * (delayMax - delayMin + 1)) + delayMin;
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
+
+    // Hledání inputů a překlad
+    async function hledejAPreklopej() {
+        const inputy = document.querySelectorAll('input[type="text"], textarea');
+
+        for (let input of inputy) {
+            if (!input.dataset.prelozeno) {
+                const original = input.value.trim().toLowerCase();
+                if (original in preklady) {
+                    input.dataset.prelozeno = "ano";
+                    const preklad = preklady[original];
+                    await napisZpozdeno(input, preklad);
+                }
+            }
+        }
+    }
+
+    // Opakovat každých 2 sekundy
+    setInterval(hledejAPreklopej, 2000);
+})();
